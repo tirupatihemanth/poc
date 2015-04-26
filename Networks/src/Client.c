@@ -60,6 +60,8 @@ char *induceError(char *);
  *    See:	Unix Network Programming: Richard Stevens - Vol I
  *    Bugs:	
  -------------------------------------------------------------------------*/
+ 
+
 int  main (int argc, char **argv)
 {
     int                   sockFd;
@@ -98,11 +100,8 @@ int  main (int argc, char **argv)
     }
     /* 
      * Bind any local address for us.
-     */
-    
-      printf ("Socket bound\n");    
+     */    
 
-    
     bzero(( char *) &clientAddr , sizeof (clientAddr));
     clientAddr.sin_family   = AF_INET;
     clientAddr.sin_addr.s_addr =inet_addr(argv[3]);
@@ -112,6 +111,7 @@ int  main (int argc, char **argv)
       printf(" client: can't bind  local address\n");
     exit(-1);
     }
+    printf ("Socket bound\n");
    
 /*    for (i = 0; i < 10; i++) {
       tempString[0] = (char) (i+48);
@@ -125,43 +125,85 @@ int  main (int argc, char **argv)
   char *crc;
   int j;
   char ch;
-  char *str = (char *) malloc(sizeof(char)*PACKETSIZE);
+  char *str = (char *) malloc(sizeof(char)*(PACKETSIZE+1));
 
-  FILE *encodedInput = fopen("encodedFile.txt", "r");
+  FILE *encodedInput = fopen("codebook.txt","r");
+   FILE* echoedInput= fopen("echoedMessage.txt", "w");
+   fclose(echoedInput);
     i=0;
-    while(1){
-    ch = fgetc(encodedInput);
-    if(ch == EOF){
-      if(i==0){
-        break;
+    while(1)
+    {
+      ch = fgetc(encodedInput);
+      if(ch == EOF)
+      {
+        if(i==0)  
+          break;
+       // str[i++] = '1';
+        for (; i<CODELENGTH-1; i++)
+          str[i]='0';        
+        str[i++] = '1';
       }
-      for(;i<CODELENGTH;i++){
-        str[i] = '\0';
-      }
-    }
-    else{
-      str[i++] = ch;
-    }
-    
-    if(i == CODELENGTH){
-      str[i] = '\0';
-      crc = computeCRC(str);
-      for(j=0;j<strlen(crc);j++){
-        str[i] = crc[j];
+      else
+      {
+        str[i] = ch;
         i++;
       }
-      str[i] = '\0';
-      DgClient(str, sockFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
-      str = (char *) malloc(sizeof(char)*PACKETSIZE);
-      i = 0;
-    }
-
-   // printf("i: %d\n", i);
-
+    
+      if(i == CODELENGTH)
+      {
+        str[i] = '\0';
+        crc = computeCRC(str);
+        /*for(j=0;j<strlen(crc);j++)
+        {
+          str[i] = crc[j];
+          i++;
+        }
+        str[i] = '\0';*/
+        strcat(str,crc);
+        DgClient(str, sockFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+        str = (char *) malloc(sizeof(char)*(PACKETSIZE+1));
+        i=0;
+      }
   }
 
   fclose(encodedInput);
+  encodedInput = fopen("encodedFile.txt","r");
+    i=0;
+    while(1)
+    {
+      ch = fgetc(encodedInput);
+      if(ch == EOF)
+      {
+        if(i==0)  
+          break;
+        str[i++] = EOF;
+        for (; i<CODELENGTH; i++)
+          str[i]='0';        
+      }
+      else
+      {
+        str[i] = ch;
+        i++;
+      }
     
+      if(i == CODELENGTH)
+      {
+        str[i] = '\0';
+        crc = computeCRC(str);
+        /*for(j=0;j<strlen(crc);j++)
+        {
+          str[i] = crc[j];
+          i++;
+        }
+        str[i] = '\0';*/
+        strcat(str,crc);
+        DgClient(str, sockFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+        str = (char *) malloc(sizeof(char)*(PACKETSIZE+1));
+        i=0;
+      }
+  }
+ 
+ 
     close(sockFd);
     exit(0);
     return(0);
@@ -175,7 +217,7 @@ int  main (int argc, char **argv)
 char * computeCRC(char *str){
 
   int sum=0,i;
-  char *crc = (char *) malloc(sizeof(char)*CRCLENGTH);
+  char *crc = (char *) malloc(sizeof(char)*(CRCLENGTH+1));
   for(i=0;i<strlen(str);i++){
     if(str[i] == '1'){
       sum++;
@@ -183,11 +225,11 @@ char * computeCRC(char *str){
   }
 
   if(sum%2 == 0){
-    crc[0] = '0';
+    strcpy(crc, "0");
     return crc;
   }
   else{
-    crc[0] = '1';
+    crc = strcpy(crc, "1");
     return crc;
   }
 

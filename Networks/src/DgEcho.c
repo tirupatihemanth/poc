@@ -37,6 +37,7 @@
  *    Bugs:	
  -------------------------------------------------------------------------*/
  char * detectError(char *);
+ 
 void DgEcho(int sockFd, struct sockaddr *pcliAddr, socklen_t  maxCliLen)
   {
     int       n;
@@ -54,21 +55,35 @@ void DgEcho(int sockFd, struct sockaddr *pcliAddr, socklen_t  maxCliLen)
   		      // err_dump("dg_echo : recvfrom error");*/
   		   exit(-1);
 		}	
-    strcpy(mesg, detectError(mesg));
+		else{
+		  	  if (strcmp(detectError(mesg),"0")==0)
+	    {
+	      FILE* echoedInput= fopen("echoedMessage.txt", "a");
+	        fputs(mesg,echoedInput);
+	       fclose(echoedInput);
+	    }
+		}
 
-		if (sendto (sockFd, mesg, n, 0, pcliAddr, cliLen) != n) {
+		if (sendto (sockFd, detectError(mesg), n, 0, pcliAddr, cliLen) != n) {
 		   printf("dg_echo : sendto  error\n");
                    exit(-1);
 		}
 		printf("Message sent back to Client:%s\n", mesg); 
+		
+		//---------------------------decoding--------------------------------
+
+	  
 	  }
+	  
   }	/*  End of DgEcho		End of DgEcho   */
 
 	
 char * detectError(char *mesg){
 
       int i=0, sum=0;
+      printf("mesg: %d\n",strlen(mesg));
       for(i=0;i<strlen(mesg);i++){
+      
         if(mesg[i] == '1'){
           sum++;
         }

@@ -47,11 +47,11 @@
      char recvMsg[MAXLINE];
       
 	 n = strlen(sendMsg);
-	 int count=0;
-
+	
+    
 	 while(1){
 
-	 	//strcpy(sendMsg, induceError(sendMsg));
+	 	strcpy(sendMsg, induceError(sendMsg));
 	 	if(sendto(sockFd, sendMsg , n, 0 , servAddr , servlen) != n)
 	   		printf("DgClient : sendto error on socket \n");
 
@@ -74,10 +74,6 @@
 	 recvMsg[n] = '\0';
 	 printf("Received Message %s\n", recvMsg);
 	 if(strcmp(recvMsg, "0") == 0){
-
-	 	//Decode here
-
-
 	 	break;
 	 }
 
@@ -108,7 +104,7 @@ char* induceError(char *str){
   int i=0;
   srand(time(NULL));
   for(i=0;i<PACKETSIZE;i++){
-    if(rand()%10000 == 500){
+    if(rand()%100 == 25){
       if(str[i] == '1'){
         str[i] = '0';
         break;
