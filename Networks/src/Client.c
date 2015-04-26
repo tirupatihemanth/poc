@@ -32,6 +32,12 @@
 #include "strings.h"
 #include "string.h"
 #include "include/DgFunctions.h"
+#include <time.h>
+
+#define PACKETSIZE 128
+#define CODELENGTH 127
+#define CRCLENGTH 1
+
 /*-------------------------------------------------------------------------
  *  Usage -- Prints the usage for the program
  *    Args:	
@@ -44,7 +50,8 @@ void Usage () {
   printf ("Client ServerIPAddr ServerPort ClientIPAddress ClientPort\n");
 }
 
-
+char *computeCRC(char *);
+char *induceError(char *);
 /*-------------------------------------------------------------------------
  *  main -- Main Program for the Client - sends 10 lines of text to server
  *    Args:	Takes as arguments ServerIP, ServerPort, ClientIP, ClientPort
@@ -63,6 +70,7 @@ int  main (int argc, char **argv)
     int                   i;
     char                  tempString[256];
 
+    srand(time(NULL));
     if (argc != 5) {
       Usage();
       exit(-1);
@@ -105,19 +113,85 @@ int  main (int argc, char **argv)
     exit(-1);
     }
    
-    for (i = 0; i < 10; i++) {
+/*    for (i = 0; i < 10; i++) {
       tempString[0] = (char) (i+48);
       tempString[1] = ' ';
       tempString[2] = '\0';
       strcat(tempString, sendMsg);
       printf ("Message Sent = %s\n", sendMsg);
      DgClient(tempString, sockFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+    }*/
+
+  char *crc;
+  int j;
+  char ch;
+  char *str = (char *) malloc(sizeof(char)*PACKETSIZE);
+
+  FILE *encodedInput = fopen("encodedFile.txt", "r");
+    i=0;
+    while(1){
+    ch = fgetc(encodedInput);
+    if(ch == EOF){
+      if(i==0){
+        break;
+      }
+      for(;i<CODELENGTH;i++){
+        str[i] = '\0';
+      }
     }
+    else{
+      str[i++] = ch;
+    }
+    
+    if(i == CODELENGTH){
+      str[i] = '\0';
+      crc = computeCRC(str);
+      for(j=0;j<strlen(crc);j++){
+        str[i] = crc[j];
+        i++;
+      }
+      str[i] = '\0';
+      DgClient(str, sockFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+      str = (char *) malloc(sizeof(char)*PACKETSIZE);
+      i = 0;
+    }
+
+   // printf("i: %d\n", i);
+
+  }
+
+  fclose(encodedInput);
+    
     close(sockFd);
     exit(0);
     return(0);
 }	/*  End of main		End of main   */
       
+
+/*
+  Implementing an one bit crc
+*/
+
+char * computeCRC(char *str){
+
+  int sum=0,i;
+  char *crc = (char *) malloc(sizeof(char)*CRCLENGTH);
+  for(i=0;i<strlen(str);i++){
+    if(str[i] == '1'){
+      sum++;
+    }
+  }
+
+  if(sum%2 == 0){
+    crc[0] = '0';
+    return crc;
+  }
+  else{
+    crc[0] = '1';
+    return crc;
+  }
+
+}
 
 
 /*-------------------------------------------------------------------------

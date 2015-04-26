@@ -24,10 +24,13 @@
 #include "string.h"
 #include "stdlib.h"
 #include "unistd.h"
-
+#include <stdio.h>
+ #include <time.h>
 #define MAXLINE 512
 
-
+#define PACKETSIZE 128
+#define CODELENGTH 127
+#define CRCLENGTH 1
 /*-------------------------------------------------------------------------
  *  DgClient -- Sends packets to server and receives packets from server
  *    Args:	
@@ -37,18 +40,25 @@
  *    Bugs:	
  -------------------------------------------------------------------------*/
  
+ char* induceError(char *str);
  void DgClient(char *sendMsg, int sockFd , struct sockaddr *servAddr , socklen_t servlen)
    {
      int n;
      char recvMsg[MAXLINE];
-       {
+      
 	 n = strlen(sendMsg);
-	 if(sendto(sockFd, sendMsg , n, 0 , servAddr , servlen) != n)
-	   printf("DgClient : sendto error on socket \n");
+	 int count=0;
 
-	 printf ("Message Sent = %s\n", sendMsg);
-         fflush(stdout);
-	 /*
+	 while(1){
+
+	 	//strcpy(sendMsg, induceError(sendMsg));
+	 	if(sendto(sockFd, sendMsg , n, 0 , servAddr , servlen) != n)
+	   		printf("DgClient : sendto error on socket \n");
+
+	 	printf ("Message Sent = %s\n", sendMsg);
+        fflush(stdout);
+
+        	 /*
 	  * Now read a message from the socket and write it to 
 	  * standard output.
 	  */
@@ -63,8 +73,18 @@
 
 	 recvMsg[n] = '\0';
 	 printf("Received Message %s\n", recvMsg);
+	 if(strcmp(recvMsg, "0") == 0){
 
-       }
+	 	//Decode here
+
+
+	 	break;
+	 }
+
+	 }
+
+	
+     
    }	/*  End of DgClient		End of DgClient   */
 
 /*-------------------------------------------------------------------------
@@ -82,3 +102,22 @@
  * End:
  *                        End of DgClient.c
  -------------------------------------------------------------------------*/
+
+char* induceError(char *str){
+
+  int i=0;
+  srand(time(NULL));
+  for(i=0;i<PACKETSIZE;i++){
+    if(rand()%10000 == 500){
+      if(str[i] == '1'){
+        str[i] = '0';
+        break;
+      }
+      else if(str[i] == '0'){
+        str[i] = '1';
+        break;
+      }
+    } 
+  }
+  return str;
+}

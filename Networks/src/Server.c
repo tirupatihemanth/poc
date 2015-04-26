@@ -29,6 +29,8 @@
 #include "stdlib.h"
 #include "strings.h"
 #include "DgFunctions.h"
+ #include <time.h>
+
 /*-------------------------------------------------------------------------
  *  Usage -- Prints the usage for the program
  *    Args:	
@@ -59,6 +61,7 @@ int  main(int argc, char **argv)
     int                   serverPortNumber;
     struct sockaddr_in    serverAddr, clientAddr;
 
+    srand(time(NULL));
         /*
      * OPEN A UDP socket
      */

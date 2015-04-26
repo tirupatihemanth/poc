@@ -36,6 +36,7 @@
  *    See:	UNIX Network Programming - Richard Stevens: Vol I
  *    Bugs:	
  -------------------------------------------------------------------------*/
+ char * detectError(char *);
 void DgEcho(int sockFd, struct sockaddr *pcliAddr, socklen_t  maxCliLen)
   {
     int       n;
@@ -47,21 +48,40 @@ void DgEcho(int sockFd, struct sockaddr *pcliAddr, socklen_t  maxCliLen)
   		cliLen = maxCliLen;
   		n = recvfrom(sockFd, mesg, MAXMESG, 0, pcliAddr, &cliLen);
 		printf("received string of size %d string is:%s\n",n, mesg);
+
   		if (n < 0) {
 		   printf("dg_echo : recvfrom error");
   		      // err_dump("dg_echo : recvfrom error");*/
   		   exit(-1);
 		}	
+    strcpy(mesg, detectError(mesg));
+
 		if (sendto (sockFd, mesg, n, 0, pcliAddr, cliLen) != n) {
 		   printf("dg_echo : sendto  error\n");
                    exit(-1);
 		}
 		printf("Message sent back to Client:%s\n", mesg); 
 	  }
-    }	/*  End of DgEcho		End of DgEcho   */
+  }	/*  End of DgEcho		End of DgEcho   */
 
 	
+char * detectError(char *mesg){
 
+      int i=0, sum=0;
+      for(i=0;i<strlen(mesg);i++){
+        if(mesg[i] == '1'){
+          sum++;
+        }
+      }
+
+      if(sum%2 == 0){
+        return "0";
+      }
+      else{
+        return "1";
+      }
+
+    }
 
 
 
