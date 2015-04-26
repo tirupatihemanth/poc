@@ -306,7 +306,22 @@ int main(){
 	
 	//	It's an one dimensional array of strings where index gives the ascii value of the character and the codeword is a string
 	
-
+	/********Entropy Calculation************/
+	
+	
+	int sumOfFrequencies=0;
+	
+	for(i=0;i<128;i++){
+		sumOfFrequencies+= nodes[i].freq;
+	}
+	float entropyValue=0, prob;
+	for(i=0;i<128.;i++){
+			prob = ((nodes[i].freq*1.0)/sumOfFrequencies);
+			entropyValue+= prob*log(prob);
+	}
+	 printf("Entropy of the Data is: %f\n", entropyValue);
+	/**************End Of Entropy Calculation********/
+	
 	codebook = (char **) malloc(sizeof(char *)*128);
 	for(i=0;i<128;i++){
 		codebook[i] = (char *) malloc(sizeof(char)*50);
@@ -315,14 +330,6 @@ int main(){
 	char *str = (char *) malloc(sizeof(char)*50);
 	strcpy(str, "");
 	constructCodeBook(root, str);
-	//int maxLength = INT_MIN;
-/*	for(i=0;i<128;i++){
-		if(strlen(codebook[i])>maxLength){
-			maxLength = strlen(codebook[i]);
-		}
-		printf("%s\n", codebook[i]);
-	}*/
-
 	int codeSize;
 	char *codeSizeEncoding;
 	//printf("codesize: %d\n", codeSize);
@@ -339,7 +346,7 @@ int main(){
 	}
 	fclose(codebookFile);
 	constructEncodedFile("../input.txt");
-	packetise("../bin/codebook.txt");
+	//packetise("../bin/codebook.txt");
 	return 0;
 
 }
